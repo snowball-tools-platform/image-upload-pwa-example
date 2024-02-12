@@ -6,12 +6,12 @@ import "./index.css";
 
 const AppUpdater = () => {
   const intervalMS = 1000 * 60 * 60 // 1 hour;
-  const updateSW = useRegisterSW({
+
+  useRegisterSW({
     onRegisteredSW(swUrl, r) {
       r &&
         setInterval(async () => {
           if (!(!r.installing && navigator)) return;
-
           if ("connection" in navigator && !navigator.onLine) return;
 
           const resp = await fetch(swUrl, {
@@ -26,8 +26,6 @@ const AppUpdater = () => {
         }, intervalMS);
     },
   });
-
-  console.log(updateSW);
 
   return null;
 };
