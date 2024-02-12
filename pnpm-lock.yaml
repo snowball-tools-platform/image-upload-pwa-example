@@ -14,7 +14,7 @@ specifiers:
   eslint-plugin-react-refresh: ^0.4.5
   https-localhost: ^4.7.1
   postcss: ^8.4.35
-  react: link:@types/heroicons/react
+  react: ^18.2.0
   react-dom: ^18.2.0
   tailwindcss: ^3.4.1
   typescript: ^5.2.2
@@ -23,8 +23,9 @@ specifiers:
   workbox-window: ^7.0.0
 
 dependencies:
-  '@heroicons/react': 2.1.1
-  react-dom: 18.2.0
+  '@heroicons/react': 2.1.1_react@18.2.0
+  react: 18.2.0
+  react-dom: 18.2.0_react@18.2.0
 
 devDependencies:
   '@types/react': 18.2.55
@@ -39,7 +40,6 @@ devDependencies:
   eslint-plugin-react-refresh: 0.4.5_eslint@8.56.0
   https-localhost: 4.7.1
   postcss: 8.4.35
-  react: 18.2.0
   tailwindcss: 3.4.1
   typescript: 5.3.3
   vite: 5.1.1
@@ -1515,10 +1515,12 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /@heroicons/react/2.1.1:
+  /@heroicons/react/2.1.1_react@18.2.0:
     resolution: {integrity: sha512-JyyN9Lo66kirbCMuMMRPtJxtKJoIsXKS569ebHGGRKbl8s4CtUfLnyKJxteA+vIKySocO4s1SkTkGS4xtG/yEA==}
     peerDependencies:
       react: '>= 16'
+    dependencies:
+      react: 18.2.0
     dev: false
 
   /@humanwhocodes/config-array/0.11.14:
@@ -3764,6 +3766,7 @@ packages:
     hasBin: true
     dependencies:
       js-tokens: 4.0.0
+    dev: false
 
   /lru-cache/10.2.0:
     resolution: {integrity: sha512-2bIM8x+VAf6JT4bKAljS1qUWgMsqZRPGJS6FSahIMPVvctcNhyVp7AJu7quxOW9jwkryBReKZY5tY5JYv2n/7Q==}
@@ -4283,12 +4286,13 @@ packages:
       strip-json-comments: 2.0.1
     dev: true
 
-  /react-dom/18.2.0:
+  /react-dom/18.2.0_react@18.2.0:
     resolution: {integrity: sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==}
     peerDependencies:
       react: ^18.2.0
     dependencies:
       loose-envify: 1.4.0
+      react: 18.2.0
       scheduler: 0.23.0
     dev: false
 
@@ -4302,7 +4306,7 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       loose-envify: 1.4.0
-    dev: true
+    dev: false
 
   /read-cache/1.0.0:
     resolution: {integrity: sha512-Owdv/Ft7IjOgm/i0xvNDZ1LrRANRfew4b2prF3OWMQLxLfu3bS8FVhCsrSCMK4lR56Y9ya+AThoTpDCTxCmpRA==}
