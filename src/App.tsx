@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { CameraIcon } from "@heroicons/react/24/solid";
 
-// Hook for managing images
 function useImageStorage() {
-  // Initialize IndexedDB
   const dbPromise = React.useMemo(() => idbOpen(), []);
 
   async function idbOpen() {
@@ -121,14 +119,32 @@ const App = () => {
   };
 
   const handleTitleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    setTitle(e.target.value); 
+    setTitle(e.target.value);
   };
 
   const handleDescriptionBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
-    setDescription(e.target.value); 
+    setDescription(e.target.value);
   };
 
+  const renderEmptyState = () => (
+    <div className="fixed inset-0 flex justify-center items-center p-4">
+      <div className="text-center">
+        <CameraIcon className="mx-auto h-12 w-12 text-gray-400" />
+        <h3 className="mt-2 text-sm font-semibold text-gray-900">
+          No Images Found
+        </h3>
+        <p className="mt-1 text-sm text-gray-600">
+          Upload images to see them here.
+        </p>
+      </div>
+    </div>
+  );
+
   const renderCards = () => {
+    if (images.length === 0) {
+      return renderEmptyState(); // Render the empty state if there are no images
+    }
+
     return images.map((image, index) => (
       <div key={index} className="w-full">
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
