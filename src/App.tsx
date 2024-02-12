@@ -1,25 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { CameraIcon } from "@heroicons/react/24/solid";
-import { useImageStorage } from "./hooks/useImageStorage";
-
-interface Image {
-  url: string;
-  title?: string;
-  description?: string;
-}
+import { ImageRecord, useImageStorage } from "./hooks/useImageStorage";
 
 const App = () => {
-  const [images, setImages] = useState<Image[]>([]);
+  const [images, setImages] = useState<ImageRecord[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const { storeImage, fetchImages } = useImageStorage();
+  const { storeImage, fetchImages, isLoading } = useImageStorage();
 
   useEffect(() => {
-    fetchImages().then(setImages);
-  }, []);
+    if (!isLoading) {
+      fetchImages().then(setImages);
+    }
+  }, [isLoading]);
 
   useEffect(() => {
     if (!selectedFile) {
@@ -139,20 +135,27 @@ const App = () => {
       </div>
 
       <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2 flex justify-center">
-        <label
-          htmlFor="image-upload"
-          className="cursor-pointer bg-blue-500 text-white font-bold py-2 px-8 rounded-full shadow-lg flex items-center justify-center"
-        >
-          <CameraIcon className="w-6 h-6 mr-2" />
-          <span>Upload</span>
-          <input
-            id="image-upload"
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="hidden"
-          />
-        </label>
+        {isLoading ? (
+          <div className="cursor-not-allowed bg-blue-500 text-white font-bold py-2 px-8 rounded-full shadow-lg flex items-center justify-center opacity-50">
+            <CameraIcon className="w-6 h-6 mr-2" />
+            <span>Working...</span>
+          </div>
+        ) : (
+          <label
+            htmlFor="image-upload"
+            className="cursor-pointer bg-blue-500 text-white font-bold py-2 px-8 rounded-full shadow-lg flex items-center justify-center"
+          >
+            <CameraIcon className="w-6 h-6 mr-2" />
+            <span>Upload</span>
+            <input
+              id="image-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+          </label>
+        )}
       </div>
 
       {/* Modal for Image Preview */}

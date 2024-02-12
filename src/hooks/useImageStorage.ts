@@ -1,65 +1,82 @@
+import { useState, useEffect } from "react";
 
-import React from "react";
+export interface ImageRecord {
+  url: string;
+  title?: string;
+  description?: string;
+}
 
 function useImageStorage() {
-    const dbPromise = React.useMemo(() => idbOpen(), []);
-  
-    async function idbOpen() {
-      return new Promise((resolve, reject) => {
-        const request = indexedDB.open("imagesDatabase", 1);
-  
-        request.onupgradeneeded = (event) => {
-          const db = (event.target as IDBOpenDBRequest).result;
-          if (!db.objectStoreNames.contains("images")) {
-            db.createObjectStore("images", {
-              keyPath: "id",
-              autoIncrement: true,
-            });
-          }
-        };
-  
-        request.onsuccess = (event) => {
-          resolve((event.target as IDBOpenDBRequest).result);
-        };
-  
-        request.onerror = (event) => {
-          reject(
-            "IndexedDB opening error: " +
-              (event.target as IDBOpenDBRequest).error,
-          );
-        };
-      });
+  const [db, setDb] = useState<IDBDatabase | undefined | null>(null);
+
+  useEffect(() => {
+    const idbOpen = () => {
+      const request = indexedDB.open("imagesDatabase", 1);
+      request.onupgradeneeded = (event) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+        if (!db.objectStoreNames.contains("images")) {
+          db.createObjectStore("images", {
+            keyPath: "id",
+            autoIncrement: true,
+          });
+        }
+      };
+
+      request.onsuccess = (event) => {
+        setDb((event.target as IDBOpenDBRequest).result as IDBDatabase);
+      };
+
+      request.onerror = (event) => {
+        console.error(
+          "IndexedDB opening error:",
+          (event.target as IDBOpenDBRequest).error,
+        );
+      };
+    };
+    idbOpen();
+  }, []);
+
+  async function storeImage(blob: Blob, title?: string, description?: string) {
+    if (!db) {
+      throw new Error("IndexDB is not initialized.");
     }
-  
-    async function storeImage(blob: Blob, title?: string, description?: string) {
-      const db = (await dbPromise) as IDBDatabase;
-      const tx = db.transaction("images", "readwrite");
-      const store = tx.objectStore("images");
-      const timestamp = new Date();
-      const id = await store.put({ blob, title, description, timestamp });
-      await new Promise<void>((resolve) => (tx.oncomplete = () => resolve()));
-      return id;
-    }
-  
-    async function fetchImages() {
-      const db = (await dbPromise) as IDBDatabase;
-      const tx = db.transaction("images", "readonly");
-      const store = tx.objectStore("images");
-  
-      const images = await new Promise<any[]>((resolve, reject) => {
-        const request = store.getAll();
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
-  
-      return images.reverse().map((imgRecord) => ({
-        url: URL.createObjectURL(imgRecord.blob),
-        title: imgRecord.title,
-        description: imgRecord.description,
-      }));
-    }
-  
-    return { storeImage, fetchImages };
+
+    const tx = db.transaction("images", "readwrite");
+    const store = tx.objectStore("images");
+    const timestamp = new Date();
+    const imageRecord = { blob, title, description, timestamp };
+    store.add(imageRecord);
+
+    return new Promise((resolve, reject) => {
+      tx.oncomplete = () => resolve(imageRecord);
+      tx.onerror = () => reject(tx.error);
+    });
   }
 
-  export { useImageStorage };
+  async function fetchImages() {
+    if (!db) {
+      throw new Error("IndexDB is not initialized.");
+    }
+
+    const tx = db.transaction("images", "readonly");
+    const store = tx.objectStore("images");
+
+    return new Promise<ImageRecord[]>((resolve, reject) => {
+      const request = store.getAll();
+      request.onsuccess = () => {
+        resolve(
+          request.result.reverse().map((imgRecord) => ({
+            url: URL.createObjectURL(imgRecord.blob),
+            title: imgRecord.title,
+            description: imgRecord.description,
+          })),
+        );
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  return { storeImage, fetchImages, isLoading: !db };
+}
+
+export { useImageStorage };
