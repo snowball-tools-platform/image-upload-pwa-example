@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { CameraIcon } from "@heroicons/react/24/solid";
 import { ImageRecord, useImageStorage } from "./hooks/useImageStorage";
 
@@ -7,9 +7,8 @@ const App = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
   const { storeImage, fetchImages, isLoading } = useImageStorage();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isLoading) {
@@ -20,7 +19,6 @@ const App = () => {
   useEffect(() => {
     if (!selectedFile) {
       setPreview(null);
-      setIsModalOpen(false);
       return;
     }
 
@@ -36,30 +34,25 @@ const App = () => {
     setSelectedFile(file);
   };
 
-  const uploadImage = async () => {
+  const uploadImage = async (title?: string, description?: string) => {
     if (selectedFile) {
       await storeImage(selectedFile, title, description);
       const updatedImages = await fetchImages();
       setImages(updatedImages);
-      setSelectedFile(null);
-      setTitle("");
-      setDescription("");
-      setIsModalOpen(false);
+      resetFormAndCloseModal();
     }
   };
 
   const cancelUpload = () => {
+    resetFormAndCloseModal();
+  };
+
+  const resetFormAndCloseModal = () => {
     setSelectedFile(null);
-    setPreview(null);
     setIsModalOpen(false);
-  };
-
-  const handleTitleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    setTitle(e.target.value);
-  };
-
-  const handleDescriptionBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
-    setDescription(e.target.value);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const renderEmptyState = () => (
@@ -78,7 +71,7 @@ const App = () => {
 
   const renderCards = () => {
     if (images.length === 0) {
-      return renderEmptyState(); // Render the empty state if there are no images
+      return renderEmptyState();
     }
 
     return images.map((image, index) => (
@@ -102,20 +95,73 @@ const App = () => {
     ));
   };
 
-  const Modal = ({
+  const UploadPreviewModal = ({
     isOpen,
-    children,
+    onSubmit,
+    onCancel,
   }: {
     isOpen: boolean;
-    children: React.ReactNode;
+    onSubmit: (title?: string, description?: string) => void;
+    onCancel: () => void;
   }) => {
-    if (!isOpen) return null;
+    const [localTitle, setLocalTitle] = useState<string | undefined>();
+    const [localDescription, setLocalDescription] = useState<
+      string | undefined
+    >();
+
+    useEffect(() => {
+      if (preview) {
+        setLocalTitle("");
+        setLocalDescription("");
+      }
+    }, [preview]);
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-        <div className="bg-white rounded-lg p-5 max-w-3xl w-full mx-auto">
-          {children}
-        </div>
+      <div
+        className={`fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4 ${!isOpen && "hidden"}`}
+      >
+        {isOpen && (
+          <div className="bg-white rounded-lg p-5 max-w-3xl w-full mx-auto">
+            {preview && (
+              <>
+                <img
+                  src={preview}
+                  alt="Preview"
+                  className="max-w-full max-h-[60vh] object-contain mx-auto block"
+                />
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Title"
+                    value={localTitle}
+                    onChange={(e) => setLocalTitle(e.target.value)}
+                    className="text-lg font-semibold w-full rounded mb-1 p-2"
+                  />
+                  <textarea
+                    placeholder="Description"
+                    value={localDescription}
+                    onChange={(e) => setLocalDescription(e.target.value)}
+                    className="text-gray-600 w-full rounded mb-4 p-2"
+                  />
+                </div>
+              </>
+            )}
+            <div className="flex justify-between">
+              <button
+                onClick={() => onSubmit(localTitle, localDescription)}
+                className="bg-blue-500 text-white font-bold py-2 px-4 rounded"
+              >
+                Upload Image
+              </button>
+              <button
+                onClick={onCancel}
+                className="bg-red-500 text-white font-bold py-2 px-4 rounded"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -153,52 +199,19 @@ const App = () => {
               accept="image/*"
               onChange={handleImageChange}
               className="hidden"
+              ref={fileInputRef}
             />
           </label>
         )}
       </div>
 
-      {/* Modal for Image Preview */}
-      <Modal isOpen={isModalOpen}>
-        {preview && (
-          <>
-            <img
-              src={preview}
-              alt="Preview"
-              className="max-w-full max-h-[60vh] object-contain mx-auto block"
-            />
-            <div>
-              <input
-                type="text"
-                placeholder="Title"
-                defaultValue={title}
-                onBlur={handleTitleBlur}
-                className="text-lg font-semibold w-full rounded mb-1 p-2"
-              />
-              <textarea
-                placeholder="Description"
-                defaultValue={description}
-                onBlur={handleDescriptionBlur}
-                className="text-gray-600 w-full rounded mb-4 p-2"
-              />
-            </div>
-          </>
-        )}
-        <div className="flex justify-between">
-          <button
-            onClick={uploadImage}
-            className="bg-blue-500 text-white font-bold py-2 px-4 rounded"
-          >
-            Upload Image
-          </button>
-          <button
-            onClick={cancelUpload}
-            className="bg-red-500 text-white font-bold py-2 px-4 rounded"
-          >
-            Cancel
-          </button>
-        </div>
-      </Modal>
+      <UploadPreviewModal
+        isOpen={isModalOpen}
+        onSubmit={(newTitle, newDescription) => {
+          uploadImage(newTitle, newDescription);
+        }}
+        onCancel={cancelUpload}
+      />
     </div>
   );
 };
