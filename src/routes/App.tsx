@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { ImageRecord, useImageStorage } from "../hooks/useImageStorage";
-import UploadPreviewModal from "./UploadPreviewModal";
-import UploadButton from "./UploadButton";
-import EmptyState from "./EmptyState";
-import ImageCard from "./ImageCard";
+import UploadPreviewModal from "../components/UploadPreviewModal";
+import UploadButton from "../components/UploadButton";
+import EmptyState from "../components/EmptyState";
+import ImageCard from "../components/ImageCard";
 
 const App = () => {
   const [images, setImages] = useState<ImageRecord[]>([]);
@@ -82,9 +82,7 @@ const App = () => {
 
       <UploadPreviewModal
         isOpen={isModalOpen}
-        onSubmit={(newTitle, newDescription) => {
-          uploadImage(newTitle, newDescription);
-        }}
+        onSubmit={uploadImage}
         onCancel={resetFormAndCloseModal}
         preview={preview}
       />
