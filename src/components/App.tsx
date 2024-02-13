@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ImageRecord, useImageStorage } from "./hooks/useImageStorage";
+import { ImageRecord, useImageStorage } from "../hooks/useImageStorage";
 import UploadPreviewModal from "./UploadPreviewModal";
 import UploadButton from "./UploadButton";
 import EmptyState from "./EmptyState";

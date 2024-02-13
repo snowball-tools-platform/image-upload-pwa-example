@@ -1,4 +1,4 @@
-import { ImageRecord } from "./hooks/useImageStorage";
+import { ImageRecord } from "../hooks/useImageStorage";
 
 const ImageCard = ({ image, index }: { image: ImageRecord, index: number }) => (
   <div key={index} className="w-full">
