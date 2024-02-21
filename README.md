@@ -19,7 +19,7 @@ These instructions will guide you through setting up the project on your local m
    ```
 2. Install the dependencies
   ```bash
-  pnpm install
+  npm install
   ```
 
 ### Running the Development Server over HTTPS
